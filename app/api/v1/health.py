@@ -1,6 +1,6 @@
 import asyncio
 
-from aiokafka import AIOKafkaAdminClient
+from aiokafka import AIOKafkaConsumer
 from fastapi import APIRouter, Depends
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from sqlalchemy import text
@@ -22,12 +22,12 @@ async def health():
 async def ready(session: AsyncSession = Depends(get_session)):
     await session.execute(text("SELECT 1"))
 
-    admin = AIOKafkaAdminClient(bootstrap_servers=settings.kafka_bootstrap)
-    await admin.start()
+    consumer = AIOKafkaConsumer(bootstrap_servers=settings.kafka_bootstrap, group_id=None)
+    await consumer.start()
     try:
-        await asyncio.wait_for(admin.list_topics(), timeout=2.0)
+        await asyncio.wait_for(consumer.topics(), timeout=2.0)
     finally:
-        await admin.close()
+        await consumer.stop()
 
     return {"status": "ok"}
 
