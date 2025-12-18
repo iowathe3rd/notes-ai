@@ -67,20 +67,27 @@ def upgrade() -> None:
         is_enum = data_type == "USER-DEFINED" and udt_name == "meeting_status"
 
         if is_text:
-            op.alter_column(
-                "meetings",
-                "status",
-                existing_type=sa.Text(),
-                type_=meeting_status_enum,
-                postgresql_using="status::meeting_status",
-                server_default=sa.text("'created'"),
+            # Postgres can't always cast the existing TEXT default to an ENUM
+            # automatically, so drop it first, cast, then set the default again.
+            op.execute(sa.text("alter table meetings alter column status drop default"))
+            op.execute(
+                sa.text(
+                    "alter table meetings alter column status "
+                    "type meeting_status using status::meeting_status"
+                )
+            )
+            op.execute(
+                sa.text(
+                    "alter table meetings alter column status "
+                    "set default 'created'::meeting_status"
+                )
             )
         elif is_enum:
             # Ensure default is set consistently.
             op.alter_column(
                 "meetings",
                 "status",
-                server_default=sa.text("'created'"),
+                server_default=sa.text("'created'::meeting_status"),
             )
 
     # 4) Add processed_events table for consumer idempotency
