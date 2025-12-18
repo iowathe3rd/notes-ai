@@ -15,15 +15,16 @@ services:
       - "0"
       - --check=false
       - --kafka-addr
-      - PLAINTEXT://0.0.0.0:9092
+      - PLAINTEXT://0.0.0.0:9092,OUTSIDE://0.0.0.0:19092
       - --advertise-kafka-addr
-      - PLAINTEXT://redpanda:9092
+      - PLAINTEXT://redpanda:9092,OUTSIDE://localhost:19092
       - --pandaproxy-addr
       - 0.0.0.0:8082
       - --advertise-pandaproxy-addr
       - redpanda:8082
     ports:
       - "9092:9092"
+      - "19092:19092"
       - "8082:8082"
     healthcheck:
       test: ["CMD-SHELL", "rpk cluster health || exit 1"]

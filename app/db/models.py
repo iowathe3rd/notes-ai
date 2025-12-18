@@ -82,3 +82,14 @@ class OutboxEvent(Base):
 
     meeting: Mapped[Meeting] = relationship(back_populates="outbox_events")
 
+
+class ProcessedEvent(Base):
+    __tablename__ = "processed_events"
+
+    consumer_name: Mapped[str] = mapped_column(sa.Text(), primary_key=True)
+    event_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    processed_at: Mapped[datetime] = mapped_column(
+        sa.DateTime(timezone=True),
+        nullable=False,
+        server_default=sa.text("now()"),
+    )
