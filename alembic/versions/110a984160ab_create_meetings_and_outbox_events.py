@@ -40,7 +40,7 @@ def upgrade() -> None:
             nullable=False
         ),
         sa.Column(
-            "stats",
+            "status",
             sa.Text(),
             nullable=False,
             server_default="created"
